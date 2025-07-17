@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "137565213801",
+    "project_id": "htasks-android1",
+    "storage_bucket": "htasks-android1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:137565213801:android:8d201d205395016fe17ef8",
+        "android_client_info": {
+          "package_name": "com.gdaniel.htasks"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZyeh5Fs0Vj88OWu23PTjTYUBguqqDSLw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
