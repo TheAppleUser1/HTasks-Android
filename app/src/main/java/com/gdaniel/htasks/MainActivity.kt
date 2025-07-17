@@ -22,7 +22,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Sms
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
