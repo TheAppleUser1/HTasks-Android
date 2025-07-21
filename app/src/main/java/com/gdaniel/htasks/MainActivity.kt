@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Article
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -67,13 +68,12 @@ import androidx.compose.material.icons.automirrored.filled.List
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import androidx.compose.material.icons.filled.Article
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.ui.draw.alpha
 import kotlinx.coroutines.runBlocking
 
-// Priority and Category enums for Android
+
 enum class TaskPriority(val label: String, val color: Color) {
     Easy("Low", Color(0xFF4CAF50)),
     Medium("Medium", Color(0xFFFF9800)),
@@ -185,7 +185,6 @@ fun WelcomeScreen() {
             Switch(checked = showDatePicker, onCheckedChange = { showDatePicker = it })
         }
         if (showDatePicker) {
-            // For simplicity, just use a text field for due date (could use a real date picker)
             OutlinedTextField(
                 value = dueDate,
                 onValueChange = { dueDate = it },
@@ -369,6 +368,7 @@ fun SettingsSheet(settings: Settings, onSettingsChanged: (Settings) -> Unit, onD
                 Text("Show Social Features (BETA)", modifier = Modifier.weight(1f))
                 Switch(checked = localSettings.showSocialFeatures, onCheckedChange = {
                     localSettings = localSettings.copy(showSocialFeatures = it)
+                    onSettingsChanged(localSettings)
                 })
             }
             Spacer(Modifier.height(10.dp))
@@ -600,8 +600,43 @@ fun HomeScreen(
                                 }
                             }
                             // Motivation button (icon only, no action)
-                            IconButton(onClick = { /* TODO: Motivation */ }) {
+                            var showMotivationDialog by remember { mutableStateOf(false) }
+                            var motivationText by remember { mutableStateOf("") }
+                            val coroutineScope = rememberCoroutineScope()
+                            IconButton(onClick = {
+                                val prompt = buildString {
+                                    append("Task: ${task.title}\n")
+                                    append("Priority: ${task.priority.label}\n")
+                                    if (!task.dueDate.isNullOrBlank()) append("Due date: ${task.dueDate}\n")
+                                    append("\nProvide a motivating, but short few sentence text. If the priority is High, then it should be a more harsh, but still nice motivating text. If it's low priority, and the due date is not close, then give a light, but motivating text.")
+                                }
+                                motivationText = ""
+                                showMotivationDialog = true
+                                coroutineScope.launch {
+                                    motivationText = GeminiService.sendMessage(prompt)
+                                }
+                            }) {
                                 Icon(Icons.Filled.Star, contentDescription = "Motivation")
+                            }
+                            if (showMotivationDialog) {
+                                AlertDialog(
+                                    onDismissRequest = { showMotivationDialog = false },
+                                    title = { Text("Motivation") },
+                                    text = {
+                                        if (motivationText.isBlank()) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                                                Spacer(Modifier.width(12.dp))
+                                                Text("Getting your motivation...")
+                                            }
+                                        } else {
+                                            Text(motivationText)
+                                        }
+                                    },
+                                    confirmButton = {
+                                        Button(onClick = { showMotivationDialog = false }) { Text("OK") }
+                                    }
+                                )
                             }
                             // Complete button (icon only, toggles completion)
                             IconButton(onClick = { onToggleComplete(index) }) {
@@ -649,8 +684,6 @@ fun HomeScreen(
 }
 
 fun isInCurrentWeek(task: Task): Boolean {
-    // Simple week check: tasks with dueDate in this week or completed this week
-    // For demo, just count all completed tasks (customize as needed)
     return true
 }
 
@@ -660,7 +693,6 @@ fun StatisticsSheet(tasks: List<Task>, onDismiss: () -> Unit) {
     var selectedRange by remember { mutableStateOf(0) }
     val now = remember { java.util.Calendar.getInstance() }
     val filteredTasks = remember(tasks, selectedRange) {
-        // Filter tasks by selected time range
         val cal = java.util.Calendar.getInstance()
         tasks.filter { task ->
             if (!task.isCompleted) return@filter false
